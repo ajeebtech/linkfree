@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Linkfree - The Cooler Linktree Alternative",
+  title: "the free link in bio tool: linkfree",
   description: "One link to rule them all. But cooler. And free.",
 };
 
