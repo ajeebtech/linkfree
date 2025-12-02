@@ -94,7 +94,7 @@ export function OnboardingWizard() {
                                     alert(result.error) // Simple error handling for now
                                     return
                                 }
-                                router.push(`/${data.username}`)
+                                router.push("/admin")
                             } catch (error) {
                                 console.error(error)
                                 alert("Something went wrong")

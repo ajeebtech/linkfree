@@ -30,7 +30,7 @@ export function Hero() {
                         transition={{ duration: 0.5, delay: 0.1 }}
                     >
                         Linktree Premium.<br />
-                        But Free.
+                        but free.
                     </motion.h1>
 
                     <motion.div

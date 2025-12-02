@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
         .single()
 
     if (profile) {
-        redirect(`/${profile.username}`)
+        redirect("/admin")
     }
 
     return (
