@@ -1,13 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Layout, Palette, Link as LinkIcon, Settings, ExternalLink } from "lucide-react"
+import { Layout, Palette, Link as LinkIcon, Settings, ExternalLink, Save } from "lucide-react"
 import Link from "next/link"
 
 import { LinkEditor } from "./link-editor"
 import { AppearanceEditor } from "./appearance-editor"
+import { ProfilePreview } from "@/components/profile-preview"
+import { updateProfile } from "@/lib/actions"
 
 interface DashboardClientProps {
     profile: any
@@ -16,49 +18,28 @@ interface DashboardClientProps {
 export function DashboardClient({ profile }: DashboardClientProps) {
     const [activeTab, setActiveTab] = useState("links")
     const [data, setData] = useState(profile)
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
 
     // Helper to update local state when child components save
     const handleUpdate = (updates: any) => {
         setData((prev: any) => ({ ...prev, ...updates }))
+        setHasUnsavedChanges(true)
     }
 
-    // Theme styles for preview
-    const getThemeStyles = () => {
-        const mode = data.theme?.mode || "light"
-        const palette = data.theme?.palette || "monochrome"
-        const font = data.font || "inter"
-
-        const baseClasses = `h-full w-full rounded-[2.2rem] overflow-hidden relative flex flex-col ${mode === "dark" ? "bg-zinc-950 text-white" : "bg-white text-zinc-950"
-            }`
-
-        const fontClass = {
-            inter: "font-sans",
-            serif: "font-serif",
-            mono: "font-mono",
-        }[font as string] || "font-sans"
-
-        return { baseClasses, fontClass, palette }
-    }
-
-    const { baseClasses, fontClass, palette } = getThemeStyles()
-
-    const getButtonClass = () => {
-        const base = "w-full p-3 rounded-lg text-center text-sm font-medium transition-transform active:scale-95"
-
-        if (data.theme?.mode === "dark") {
-            switch (palette) {
-                case "blue": return `${base} bg-blue-600 text-white`
-                case "green": return `${base} bg-emerald-600 text-white`
-                case "purple": return `${base} bg-violet-600 text-white`
-                default: return `${base} bg-white text-black`
-            }
-        } else {
-            switch (palette) {
-                case "blue": return `${base} bg-blue-600 text-white`
-                case "green": return `${base} bg-emerald-600 text-white`
-                case "purple": return `${base} bg-violet-600 text-white`
-                default: return `${base} bg-black text-white`
-            }
+    const handleSave = async () => {
+        setIsSaving(true)
+        try {
+            await updateProfile({
+                links: data.links,
+                theme: data.theme,
+                font: data.font,
+            })
+            setHasUnsavedChanges(false)
+        } catch (error) {
+            console.error(error)
+        } finally {
+            setIsSaving(false)
         }
     }
 
@@ -114,21 +95,35 @@ export function DashboardClient({ profile }: DashboardClientProps) {
             {/* Main Content Area */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Editor Panel */}
-                <div className="flex-1 overflow-y-auto p-8 max-w-3xl mx-auto w-full">
-                    {activeTab === "links" && (
-                        <LinkEditor
-                            initialLinks={data.links}
-                            onUpdate={(links) => handleUpdate({ links })}
-                        />
-                    )}
+                <div className="flex-1 overflow-y-auto w-full">
+                    {/* Header with Save Button */}
+                    <div className="sticky top-0 z-20 bg-[#F3F3F1]/80 backdrop-blur-md px-8 py-4 flex justify-end border-b border-black/5">
+                        <Button
+                            onClick={handleSave}
+                            disabled={!hasUnsavedChanges || isSaving}
+                            className="rounded-full gap-2 transition-all"
+                            size="lg"
+                        >
+                            {isSaving ? "Saving..." : <><Save className="w-4 h-4" /> Save Changes</>}
+                        </Button>
+                    </div>
 
-                    {activeTab === "appearance" && (
-                        <AppearanceEditor
-                            initialTheme={data.theme}
-                            initialFont={data.font}
-                            onUpdate={(theme, font) => handleUpdate({ theme, font })}
-                        />
-                    )}
+                    <div className="p-8 max-w-3xl mx-auto">
+                        {activeTab === "links" && (
+                            <LinkEditor
+                                initialLinks={data.links}
+                                onUpdate={(links) => handleUpdate({ links })}
+                            />
+                        )}
+
+                        {activeTab === "appearance" && (
+                            <AppearanceEditor
+                                initialTheme={data.theme}
+                                initialFont={data.font}
+                                onUpdate={(theme, font) => handleUpdate({ theme, font })}
+                            />
+                        )}
+                    </div>
                 </div>
 
                 {/* Preview Panel */}
@@ -139,42 +134,20 @@ export function DashboardClient({ profile }: DashboardClientProps) {
                     </div>
 
                     {/* Phone Mockup */}
-                    <div className="w-[320px] h-[640px] bg-black rounded-[3.5rem] p-3 shadow-2xl border-[8px] border-black relative z-10 ring-4 ring-gray-200">
-                        <div className={`${baseClasses} ${fontClass}`}>
-                            {/* Phone Status Bar */}
-                            <div className="absolute top-0 left-0 right-0 h-6 z-20 flex justify-between px-6 items-center text-[10px] font-medium opacity-50 mt-2">
-                                <span>9:41</span>
-                                <div className="flex gap-1">
-                                    <div className="w-3 h-3 bg-current rounded-full opacity-20" />
-                                    <div className="w-3 h-3 bg-current rounded-full opacity-20" />
-                                </div>
+                    <div className="w-[340px] h-[680px] bg-black rounded-[3.5rem] p-3 shadow-2xl border-[8px] border-black relative z-10 ring-4 ring-gray-200 overflow-hidden">
+                        {/* Phone Status Bar */}
+                        <div className="absolute top-0 left-0 right-0 h-6 z-20 flex justify-between px-6 items-center text-[10px] font-medium text-white opacity-50 mt-3 mix-blend-difference">
+                            <span>9:41</span>
+                            <div className="flex gap-1">
+                                <div className="w-3 h-3 bg-current rounded-full" />
+                                <div className="w-3 h-3 bg-current rounded-full" />
                             </div>
+                        </div>
 
-                            {/* Preview Content */}
-                            <div className="h-full overflow-y-auto pt-14 px-4 pb-8 scrollbar-hide">
-                                <div className="flex flex-col items-center gap-4">
-                                    <div className="h-24 w-24 rounded-full bg-secondary overflow-hidden ring-4 ring-current ring-opacity-5">
-                                        {data.avatar_url && <img src={data.avatar_url} alt="Profile" className="h-full w-full object-cover" />}
-                                    </div>
-                                    <div className="text-center space-y-1">
-                                        <h2 className="font-bold text-xl">{data.full_name}</h2>
-                                        <p className="text-sm opacity-60">@{data.username}</p>
-                                    </div>
-
-                                    {/* Links Preview */}
-                                    <div className="w-full space-y-3 mt-6">
-                                        {(data.links || []).map((link: any, i: number) => (
-                                            <a key={i} href="#" className={getButtonClass()}>
-                                                {link.title}
-                                            </a>
-                                        ))}
-                                        {(!data.links || data.links.length === 0) && (
-                                            <div className="w-full p-4 rounded-lg border-2 border-dashed border-current border-opacity-20 text-center text-xs opacity-50">
-                                                Add links to see them here
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                        {/* Preview Content */}
+                        <div className="h-full w-full bg-white rounded-[2.5rem] overflow-hidden relative">
+                            <div className="absolute inset-0 overflow-y-auto scrollbar-hide origin-top scale-[0.65] w-[153.8%] h-[153.8%] -ml-[26.9%] -mt-[26.9%]">
+                                <ProfilePreview profile={data} isPreview={true} />
                             </div>
                         </div>
                     </div>

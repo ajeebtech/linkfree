@@ -4,8 +4,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { updateProfile } from "@/lib/actions"
-import { Save } from "lucide-react"
 
 interface Theme {
     mode: "light" | "dark"
@@ -21,27 +19,21 @@ interface AppearanceEditorProps {
 export function AppearanceEditor({ initialTheme, initialFont, onUpdate }: AppearanceEditorProps) {
     const [theme, setTheme] = useState<Theme>(initialTheme || { mode: "light", palette: "monochrome" })
     const [font, setFont] = useState(initialFont || "inter")
-    const [isSaving, setIsSaving] = useState(false)
 
-    const handleSave = async () => {
-        setIsSaving(true)
-        try {
-            await updateProfile({ theme, font })
-            onUpdate(theme, font)
-        } catch (error) {
-            console.error(error)
-        } finally {
-            setIsSaving(false)
-        }
+    const handleThemeChange = (newTheme: Theme) => {
+        setTheme(newTheme)
+        onUpdate(newTheme, font)
+    }
+
+    const handleFontChange = (newFont: string) => {
+        setFont(newFont)
+        onUpdate(theme, newFont)
     }
 
     return (
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Customize Appearance</h2>
-                <Button onClick={handleSave} disabled={isSaving} className="gap-2">
-                    {isSaving ? "Saving..." : <><Save className="w-4 h-4" /> Save Changes</>}
-                </Button>
             </div>
 
             <div className="space-y-4">
@@ -59,7 +51,7 @@ export function AppearanceEditor({ initialTheme, initialFont, onUpdate }: Appear
                         cursor-pointer rounded-lg border-2 p-4 flex flex-col items-center gap-2 transition-all
                         ${theme.palette === palette.id ? "border-primary bg-secondary/50" : "border-transparent bg-secondary/20 hover:bg-secondary/40"}
                     `}
-                            onClick={() => setTheme({ ...theme, palette: palette.id as any })}
+                            onClick={() => handleThemeChange({ ...theme, palette: palette.id as any })}
                         >
                             <div className={`h-8 w-8 rounded-full ${palette.bg}`} />
                             <span className="text-sm font-medium">{palette.name}</span>
@@ -72,7 +64,7 @@ export function AppearanceEditor({ initialTheme, initialFont, onUpdate }: Appear
                 <Label className="text-base">Background Mode</Label>
                 <RadioGroup
                     value={theme.mode}
-                    onValueChange={(val) => setTheme({ ...theme, mode: val as any })}
+                    onValueChange={(val) => handleThemeChange({ ...theme, mode: val as any })}
                     className="grid grid-cols-2 gap-4"
                 >
                     <div>
@@ -112,7 +104,7 @@ export function AppearanceEditor({ initialTheme, initialFont, onUpdate }: Appear
                         cursor-pointer rounded-lg border-2 p-4 text-center transition-all
                         ${font === f.id ? "border-primary bg-secondary/50" : "border-transparent bg-secondary/20 hover:bg-secondary/40"}
                     `}
-                            onClick={() => setFont(f.id)}
+                            onClick={() => handleFontChange(f.id)}
                         >
                             <span className={`text-lg ${f.font}`}>Aa</span>
                             <p className="text-xs mt-1 text-muted-foreground">{f.name}</p>
