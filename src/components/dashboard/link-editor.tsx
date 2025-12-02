@@ -30,6 +30,12 @@ const PLATFORMS = [
     { id: "instagram", name: "Instagram", icon: Icons.Instagram, prefix: "https://instagram.com/" },
     { id: "tiktok", name: "TikTok", icon: Icons.TikTok, prefix: "https://tiktok.com/@" },
     { id: "twitter", name: "Twitter", icon: Icons.Twitter, prefix: "https://x.com/" },
+    { id: "youtube", name: "YouTube", icon: Icons.YouTube, prefix: "https://youtube.com/@" },
+    { id: "linkedin", name: "LinkedIn", icon: Icons.LinkedIn, prefix: "https://linkedin.com/in/" },
+    { id: "facebook", name: "Facebook", icon: Icons.Facebook, prefix: "https://facebook.com/" },
+    { id: "github", name: "GitHub", icon: Icons.Github, prefix: "https://github.com/" },
+    { id: "twitch", name: "Twitch", icon: Icons.Twitch, prefix: "https://twitch.tv/" },
+    { id: "discord", name: "Discord", icon: Icons.Discord, prefix: "https://discord.gg/" },
     { id: "custom", name: "Custom Link", icon: null, prefix: "https://" },
 ]
 
@@ -40,14 +46,9 @@ export function LinkEditor({ initialLinks, onUpdate }: LinkEditorProps) {
     const [newLinkUrl, setNewLinkUrl] = useState("")
     const [isSelectOpen, setIsSelectOpen] = useState(false)
 
-    const availablePlatforms = PLATFORMS.filter(platform => {
-        if (platform.id === "custom") return true
-        return !links.some(link => link.url.startsWith(platform.prefix))
-    })
-
     const handleAddClick = () => {
-        setSelectedPlatform(availablePlatforms[0])
-        setNewLinkUrl(availablePlatforms[0].prefix)
+        setSelectedPlatform(PLATFORMS[0])
+        setNewLinkUrl(PLATFORMS[0].prefix)
         setIsDrawerOpen(true)
     }
 
@@ -112,21 +113,32 @@ export function LinkEditor({ initialLinks, onUpdate }: LinkEditorProps) {
                                         </button>
 
                                         {isSelectOpen && (
-                                            <div className="absolute bottom-full mb-2 left-0 right-0 bg-white rounded-xl shadow-xl border overflow-hidden z-10 animate-in fade-in slide-in-from-bottom-2">
-                                                {availablePlatforms.map((platform) => (
-                                                    <button
-                                                        key={platform.id}
-                                                        onClick={() => {
-                                                            setSelectedPlatform(platform)
-                                                            setNewLinkUrl(platform.prefix)
-                                                            setIsSelectOpen(false)
-                                                        }}
-                                                        className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors text-left"
-                                                    >
-                                                        {platform.icon ? <platform.icon className="w-5 h-5" /> : <div className="w-5 h-5" />}
-                                                        <span className="font-medium">{platform.name}</span>
-                                                    </button>
-                                                ))}
+                                            <div className="absolute bottom-full mb-2 left-0 right-0 bg-white rounded-xl shadow-xl border overflow-hidden z-10 animate-in fade-in slide-in-from-bottom-2 max-h-[300px] overflow-y-auto">
+                                                {PLATFORMS.map((platform) => {
+                                                    const isUsed = platform.id !== "custom" && links.some(link => link.url.startsWith(platform.prefix))
+                                                    return (
+                                                        <button
+                                                            key={platform.id}
+                                                            onClick={() => {
+                                                                setSelectedPlatform(platform)
+                                                                setNewLinkUrl(platform.prefix)
+                                                                setIsSelectOpen(false)
+                                                            }}
+                                                            className={`w-full flex items-center justify-between p-4 transition-colors text-left ${isUsed
+                                                                    ? "bg-green-50 hover:bg-green-100 text-green-700"
+                                                                    : "hover:bg-secondary/50"
+                                                                }`}
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                {platform.icon ? <platform.icon className="w-5 h-5" /> : <div className="w-5 h-5" />}
+                                                                <span className="font-medium">{platform.name}</span>
+                                                            </div>
+                                                            {isUsed && (
+                                                                <div className="h-2 w-2 rounded-full bg-green-500" />
+                                                            )}
+                                                        </button>
+                                                    )
+                                                })}
                                             </div>
                                         )}
                                     </div>

@@ -78,5 +78,11 @@ export const getIconForUrl = (url: string) => {
     if (lowerUrl.includes("instagram.com")) return Icons.Instagram
     if (lowerUrl.includes("tiktok.com")) return Icons.TikTok
     if (lowerUrl.includes("twitter.com") || lowerUrl.includes("x.com")) return Icons.Twitter
+    if (lowerUrl.includes("youtube.com") || lowerUrl.includes("youtu.be")) return Icons.YouTube
+    if (lowerUrl.includes("linkedin.com")) return Icons.LinkedIn
+    if (lowerUrl.includes("facebook.com")) return Icons.Facebook
+    if (lowerUrl.includes("github.com")) return Icons.Github
+    if (lowerUrl.includes("twitch.tv")) return Icons.Twitch
+    if (lowerUrl.includes("discord.com") || lowerUrl.includes("discord.gg")) return Icons.Discord
     return null
 }
